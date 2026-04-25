@@ -1,13 +1,6 @@
 {
-  "version": 2,
-  "routes": [
-    {
-      "src": "/.*",
-      "dest": "/index.html",
-      "headers": {
-        "X-Frame-Options": "DENY",
-        "Cache-Control": "no-store, max-age=0"
-      }
-    }
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

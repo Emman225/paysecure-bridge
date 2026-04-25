@@ -35,28 +35,28 @@
 (function () {
   var card     = document.getElementById('card');
   var params   = new URLSearchParams(window.location.search);
-  var path     = window.location.pathname;
+  var path     = window.location.pathname || '/';
   var pathParts = path.split('/').filter(Boolean);
 
-  // Detecte si l'URL provient de PaySecure :
-  //   - path commence par /api/v1/paysecure/return/{code}
-  //   - OU un parametre ?code=... est present
-  //   - OU le dernier segment du path ressemble a un code paiement (XXX-AAAA...)
-  var fromPath  = path.indexOf('/api/v1/paysecure/return/') === 0;
+  // Detecte si on est sur la racine (pas de path significatif)
+  var isRoot = path === '/' || path === '' || path === '/index.html' || path === '/404.html';
+
+  // Detecte un code paiement :
+  //   - dans la query (?code=XXX)
+  //   - dans le dernier segment du path (XXX-AAAAAAAA...)
+  // Le code paiement genere par le backend a le format : PREFIXE-XXXXXXXXXXXXXXXX
   var codeQuery = params.get('code');
   var lastSeg   = pathParts[pathParts.length - 1] || '';
-  var looksLikeCode = /^[A-Za-z0-9_-]{8,}$/.test(lastSeg) && !fromPath ? false : (fromPath || codeQuery);
+  var looksLikeCode = /^[A-Z]{2,5}-[A-Za-z0-9_-]{8,32}$/.test(lastSeg);
 
-  var code = codeQuery || (fromPath ? lastSeg : '');
+  var code = codeQuery || (looksLikeCode && !isRoot ? lastSeg : '');
   var hasPaySecureContext = !!code;
 
   if (!hasPaySecureContext) {
-    // Aucun code paiement : afficher la page de statut "bridge en service"
     renderStatusPage();
     return;
   }
 
-  // Sinon : redirection automatique vers le frontend
   redirectToFrontend(code);
 
   // ==========================================================================
@@ -83,7 +83,7 @@
       '<details>' +
         '<summary>Tester manuellement la redirection</summary>' +
         '<p style="margin-top:.75rem">Visiter cette URL pour simuler un retour PaySecure :</p>' +
-        '<pre>' + bridgeOrigin + '/api/v1/paysecure/return/TEST-CODE-12345?frontend=http%3A%2F%2Flocalhost%3A5173&status=success</pre>' +
+        '<pre>' + bridgeOrigin + '/paysecure-return/SUB-TEST12345?frontend=http%3A%2F%2Flocalhost%3A5173&status=success</pre>' +
       '</details>';
   }
 

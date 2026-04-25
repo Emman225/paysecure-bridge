@@ -1,0 +1,15 @@
+[build]
+  publish = "."
+
+# Catch-all : tout chemin (y compris /api/v1/paysecure/return/{code}) est servi par index.html
+# Le JavaScript du bridge extrait le code paiement et redirige vers le frontend local.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    Cache-Control = "no-store, max-age=0"
